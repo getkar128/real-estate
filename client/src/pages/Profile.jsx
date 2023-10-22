@@ -15,8 +15,6 @@ const Profile = () => {
     const [ errorMessage, setErrorMessage ] = useState('')
     const [ formData, setFormData ] = useState({})
 
-    
-
     useEffect(() => {
         if (file){
             handleFileUpload(file)
