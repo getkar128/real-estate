@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux"
-import { deleteUserFailure, deleteUserStart, deleteUserSuccess, selectUser, updateUserFailure, updateUserStart, updateUserSuccess } from "../redux/user/userSlice"
+import { deleteUserFailure, deleteUserStart, deleteUserSuccess, selectUser, signOutUserFailure, signOutUserStart, signOutUserSuccess, updateUserFailure, updateUserStart, updateUserSuccess } from "../redux/user/userSlice"
 import { useEffect, useRef, useState } from "react"
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from 'firebase/storage'
 import { app } from "../../firebase"
@@ -92,6 +92,20 @@ const Profile = () => {
         }
     }
 
+    const handleSignOut = async () => {
+        dispatch(signOutUserStart())
+        try {
+            const res = await fetch('/api/auth/signout')
+            const data = await res.json()
+            if (data.success === false){
+                return
+            }
+            dispatch(signOutUserSuccess())
+        } catch (error) {
+            dispatch(signOutUserFailure(error))
+        }
+    }
+
     return (
         <div className="p-3 max-w-lg mx-auto">
             <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
@@ -128,7 +142,7 @@ const Profile = () => {
             </form>
             <div className="flex justify-between mt-5">
                 <span className="text-red-700 cursor-pointer" onClick={handleDeleteUser}>Delete Account</span>
-                <span className="text-red-700 cursor-pointer">Sign Out</span>
+                <span className="text-red-700 cursor-pointer" onClick={handleSignOut}>Sign Out</span>
             </div>
             <p className="text-red-700">{error ? error : null}</p>
             <p className="text-green-700 mt-5">{updateSuccess ? "User is updated successfully" : null}</p>
