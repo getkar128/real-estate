@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux"
-import { selectUser, updateUserFailure, updateUserStart, updateUserSuccess } from "../redux/user/userSlice"
+import { deleteUserFailure, deleteUserStart, deleteUserSuccess, selectUser, updateUserFailure, updateUserStart, updateUserSuccess } from "../redux/user/userSlice"
 import { useEffect, useRef, useState } from "react"
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from 'firebase/storage'
 import { app } from "../../firebase"
@@ -12,7 +12,6 @@ const Profile = () => {
     const [ file, setFile ] = useState(undefined)
     const [ fileProgress, setFileProgress ] = useState(0)
     const [ fileError, setFileError ] = useState(false)
-    const [ errorMessage, setErrorMessage ] = useState('')
     const [ formData, setFormData ] = useState({})
     const [ updateSuccess, setUpdateSuccess ] = useState(false)
 
@@ -37,8 +36,8 @@ const Profile = () => {
             const progress = (snapshot.bytesTransferred/snapshot.totalBytes)*100
             setFileProgress(Math.round(progress))
         },
+        // eslint-disable-next-line no-unused-vars
         (error) => {
-            setErrorMessage(error.message)
             setFileError(true);
         },
         () => {
@@ -69,15 +68,29 @@ const Profile = () => {
                 dispatch(updateUserFailure(data.message))
                 return
             }
-            dispatch(updateUserSuccess(data))
+            dispatch(updateUserSuccess())
             setUpdateSuccess(true)
         } catch (error) {
             dispatch(updateUserFailure(error.message))
         }
     }
 
-    console.log(errorMessage)
-    console.log(formData)
+    const handleDeleteUser = async () => {
+        try {
+            dispatch(deleteUserStart())
+            const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+                method: 'DELETE'
+            })
+            const data = await res.json()
+            if (data.success === false) {
+                dispatch(deleteUserFailure(data.message))
+                return
+            }
+            dispatch(deleteUserSuccess())
+        }catch (error) {
+            dispatch(deleteUserFailure(error.message))
+        }
+    }
 
     return (
         <div className="p-3 max-w-lg mx-auto">
@@ -114,7 +127,7 @@ const Profile = () => {
                 <button disabled={loading} className="bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95">{loading ? "Loading..." : "Update" }</button>
             </form>
             <div className="flex justify-between mt-5">
-                <span className="text-red-700 cursor-pointer">Delete Account</span>
+                <span className="text-red-700 cursor-pointer" onClick={handleDeleteUser}>Delete Account</span>
                 <span className="text-red-700 cursor-pointer">Sign Out</span>
             </div>
             <p className="text-red-700">{error ? error : null}</p>
