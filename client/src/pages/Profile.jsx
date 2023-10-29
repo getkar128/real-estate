@@ -120,6 +120,22 @@ const Profile = () => {
             setShowListingError(true)
         }
     }
+
+    const handleListingDelete = async (listingId) => {
+        try {
+            const res = await fetch(`/api/listing/delete/${listingId}`, {
+                method: 'DELETE',
+            })
+            const data = await res.json()
+            if (data.success === false){
+                console.log(data.message)
+                return
+            }
+            setUserListing((prev) => prev.filter(listing => listing._id !== listingId))
+        } catch (error) {
+            console.log(error.message)
+        }
+    }
     
     return (
         <div className="p-3 max-w-lg mx-auto">
@@ -168,16 +184,18 @@ const Profile = () => {
                 <h1 className="text-center text-2xl font-semibold">Your Listing</h1>
                 {userListing && userListing.length > 0 && (
                 userListing.map((listing, index) => (
-                    <Link key={index} to={`/listing/${listing._id}`}>
-                        <div  className="flex border rounded-lg p-3 items-center justify-between gap-4">
+                    <div key={index} className="flex border rounded-lg p-3 items-center justify-between gap-4">
+                        <Link key={index} to={`/listing/${listing._id}`}>
                             <img src={listing.imageUrls[0]} className="w-16 h-16 object-contain" alt="" />
+                        </Link>
+                        <Link key={index} to={`/listing/${listing._id}`}>
                             <p className="text-slate-700 font-semibold flex-1 hover:underline truncate">{listing.name}</p>
-                            <div className="flex flex-col items-center gap-2">
-                                <button className="uppercase text-red-700">delete</button>
-                                <button className="uppercase text-green-700">Edit</button>
-                            </div>
+                        </Link>
+                        <div className="flex flex-col items-center gap-2">
+                            <button className="uppercase text-red-700" onClick={() => handleListingDelete(listing._id)}>delete</button>
+                            <button className="uppercase text-green-700">Edit</button>
                         </div>
-                    </Link>
+                    </div>
                 )))}
             </div>
         </div>
